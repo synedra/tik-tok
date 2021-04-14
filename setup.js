@@ -10,12 +10,17 @@ const dotenv = require("parsenv");
 const jq = require('node-jq');
 
 let response = '';
-const envpath = os.homedir() + '/.env'
+const envpath = '.env'
 if (!fs.existsSync(envpath)) {
 	fs.closeSync(fs.openSync(envpath, 'w'));
 }
-const config = {
-    path: envpath
+const astrapath = os.homedir() + '/.astrarc'
+if (!fs.existsSync(astrapath)) {
+	fs.closeSync(fs.openSync(astrapath, 'w'));
+}
+
+const astraconfig = {
+    path: astrapath
 };
 
 dotenv.config(config)
@@ -166,7 +171,7 @@ async function findTikTokDatabase(retry) {
 		const timeout = 5000 * 10;
 		console.log(chalk.yellow('Waiting', timeout, 'ms'));
 		await wait(timeout);
-		output = findTikTokDatabase(true);
+		output = findNetlifyDatabase(true);
 	}
 
 	if (!process.env['ASTRA_DB_ID']) {
@@ -175,6 +180,7 @@ async function findTikTokDatabase(retry) {
 		dotenv.edit({ ASTRA_DB_KEYSPACE: output.keyspace});
 		
 		dotenv.write(config)
+		dotenv.write(astraconfig)
 		dotenv.config(config)
 	}
 	return output;
