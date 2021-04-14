@@ -18,6 +18,7 @@ const astrapath = os.homedir() + '/.astrarc'
 if (!fs.existsSync(astrapath)) {
 	fs.closeSync(fs.openSync(astrapath, 'w'));
 }
+fs.writeFile(astrapath, "[default]")
 
 const config = {
     path: envpath
