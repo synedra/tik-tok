@@ -5,6 +5,7 @@ const chalk = require('chalk');
 const os = require('os');
 const fs = require('fs');
 const readline = require('readline');
+const ConfigParser = require("configparser");
 const axios = require('axios');
 const dotenv = require("parsenv");
 const jq = require('node-jq');
@@ -15,18 +16,13 @@ if (!fs.existsSync(envpath)) {
 	fs.closeSync(fs.openSync(envpath, 'w'));
 }
 const astrapath = os.homedir() + '/.astrarc'
-if (!fs.existsSync(astrapath)) {
-	fs.closeSync(fs.openSync(astrapath, 'w'));
-}
-fs.writeFile(astrapath, "[default]")
 
 const config = {
     path: envpath
 };
 
-const astraconfig = {
-    path: astrapath
-};
+const astraconfig = new ConfigParser
+astraconfig.addSection('default')
 
 dotenv.config(config)
 
@@ -69,11 +65,14 @@ async function getTokens() {
 			process.env['ASTRA_DB_ADMIN_TOKEN']= await question("Create an application token for Database Administrator\n    (save to CSV if desired)\n    and paste the 'Token' value here:\n")
 			process.env['ASTRA_DB_ADMIN_TOKEN'] = process.env['ASTRA_DB_ADMIN_TOKEN'].replace(/"/g,"");
 			dotenv.edit({ ASTRA_DB_ADMIN_TOKEN: process.env['ASTRA_DB_ADMIN_TOKEN']});
+			astraconfig.set('default','ASTRA_DB_ADMIN_TOKEN', process.env['ASTRA_DB_ADMIN_TOKEN'])
 			process.env['ASTRA_DB_APPLICATION_TOKEN'] = await question("Create an application token for API Admin User \n    (save to CSV if desired)\n    and paste the 'Token' value here:\n")
 			process.env['ASTRA_DB_APPLICATION_TOKEN'] = process.env['ASTRA_DB_APPLICATION_TOKEN'].replace(/"/g,"");
 			dotenv.edit({ ASTRA_DB_APPLICATION_TOKEN: process.env['ASTRA_DB_APPLICATION_TOKEN']});
+			astraconfig.set('default', 'ASTRA_DB_APPLICATION_TOKEN', process.env['ASTRA_DB_APPLICATION_TOKEN'])
 			dotenv.write(config)
 			dotenv.config(config)
+			astraconfig.write(astrapath)
 			return dotenv;
 		}
 		return dotenv;
@@ -181,12 +180,16 @@ async function findTikTokDatabase(retry) {
 
 	if (!process.env['ASTRA_DB_ID']) {
 		dotenv.edit({ ASTRA_DB_ID: output.id});
+		astraconfig.set('default','ASTRA_DB_ID',output.id)
 		dotenv.edit({ ASTRA_DB_REGION: output.region});
+		astraconfig.set('default','ASTRA_DB_REGION',output.region)
 		dotenv.edit({ ASTRA_DB_KEYSPACE: output.keyspace});
+		astraconfig.set('default','ASTRA_DB_KEYSPACE', output.keyspace)
 		
 		dotenv.write(config)
 		dotenv.write(astraconfig)
 		dotenv.config(config)
+		astraconfig.write(astrapath)
 	}
 	return output;
 }
