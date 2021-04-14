@@ -19,6 +19,10 @@ if (!fs.existsSync(astrapath)) {
 	fs.closeSync(fs.openSync(astrapath, 'w'));
 }
 
+const config = {
+    path: envpath
+};
+
 const astraconfig = {
     path: astrapath
 };
